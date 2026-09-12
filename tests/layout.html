@@ -1,0 +1,16 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>阅读版式检查</title>
+<style>body{font:16px/1.6 sans-serif;margin:16px;background:#e9e9e9}label,button{display:inline-block;margin:4px}button,select{font:inherit;min-height:44px}iframe{display:block;border:1px solid #888;height:740px;background:white;max-width:none}header{margin-bottom:12px}output{display:block}</style>
+<header><label>阅读窗口宽度 <select id="width"><option>320</option><option selected>375</option><option>768</option><option>1280</option></select></label>
+<label>内容 <select id="chapter"><option value="cover">封面</option><option value="preface">序章</option><option value="ch02">遮挡图</option><option value="ch04">接句与训练</option><option value="ch05">上下文</option><option value="ch06">智能体</option><option value="ch08" selected>长方形</option><option value="ch11">分层提示</option><option value="ch12">叶片测量</option><option value="ch13">证据</option><option value="ch15">权限</option><option value="ch18">结尾</option></select></label>
+<label><input id="static" type="checkbox">完整静态版</label><label><input id="scripts" type="checkbox" checked>允许脚本</label>
+<label><input id="zoom" type="checkbox">文字放大 200%</label><button id="load">载入检查</button><button id="legacy">使用旧版续读记录</button><button id="measure">检查当前布局</button><output id="result" aria-live="polite"></output></header>
+<iframe id="book" title="数字书检查窗口"></iframe>
+<script>
+const frame=document.querySelector('#book');
+frame.addEventListener('load',()=>{if(document.querySelector('#zoom').checked)frame.contentDocument.documentElement.style.fontSize='32px';});
+function load(){frame.style.width=document.querySelector('#width').value+'px';frame.setAttribute('sandbox','allow-same-origin'+(document.querySelector('#scripts').checked?' allow-scripts':''));frame.src=(document.querySelector('#static').checked?'/read.html':'/')+'?qa='+Date.now()+'#'+document.querySelector('#chapter').value;document.querySelector('#result').textContent='';}
+document.querySelector('#load').onclick=load;
+document.querySelector('#legacy').onclick=()=>{frame.addEventListener('load',()=>{localStorage.setItem('light-book-v1',JSON.stringify({font:'large',theme:'night',motion:true,volume:18,last:{id:'ch08',scroll:1800}}));document.querySelector('#chapter').value='cover';load();},{once:true});frame.src='/read.html?reset='+Date.now();};
+document.querySelector('#measure').onclick=()=>{const doc=frame.contentDocument;const controls=[...doc.querySelectorAll('button,input')].filter(x=>x.getClientRects().length&&getComputedStyle(x).visibility!=='hidden');const short=controls.filter(x=>x.getBoundingClientRect().height<44&&!['checkbox','range'].includes(x.type)).map(x=>x.textContent.trim());document.querySelector('#result').textContent=JSON.stringify({viewport:doc.documentElement.clientWidth,pageWidth:doc.documentElement.scrollWidth,shortControls:short,font:doc.body.dataset.font,theme:doc.body.dataset.theme,chapter:doc.querySelector('#chapter-heading h1')?.textContent});};
+load();
+</script></html>

@@ -7,9 +7,11 @@
   <meta name="description" content="在小学与初中之间，带着好奇走进 AI 的世界。六篇十八章，读懂新技术，也守住自己的思考。">
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232941bf'/%3E%3Cpath d='M9 26V6h14v20h-3V9h-8v17' fill='%23f8f7f2'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="styles.css">
-  <script src="book-data.js" defer></script><script src="app.js" defer></script>
+  <script src="book-data.js" defer></script><script src="reading-modules.js" defer></script><script src="reader-engine.js" defer></script><script src="app.js" defer></script>
+  <link rel="stylesheet" href="reading.css">
 </head>
 <body>
+  <noscript><style>.header-actions{display:none}</style></noscript>
   <a class="skip-link" href="#main">跳到正文</a>
   <header class="site-header">
     <a class="wordmark" href="#cover" aria-label="返回封面">门后的光<span>写给你的 AI 之书</span></a>
@@ -21,19 +23,19 @@
   </header>
   <main id="main" tabindex="-1">
     <section id="cover" class="cover-view">
-      <div class="cover-topline"><span>献给即将走进初中的你</span><span>阅读初稿 · 2026.09</span></div>
+      <div class="cover-topline"><span>献给即将走进初中的你</span><span>内容深化稿 · 0.2</span></div>
       <div class="cover-grid">
         <div class="cover-copy">
           <div class="eyebrow">关于 AI，关于这个夏天，也关于你。</div>
           <h1>门后的<span>光</span><em>从这里，看见更大的世界。</em></h1>
           <p class="cover-intro">机器可以生成许多答案。<br>你要慢慢找到，属于自己的问题。</p>
-          <div class="cover-cta"><a href="#preface" class="primary-link" id="start-reading">翻开这本书 <span aria-hidden="true">↗</span></a><span id="resume-caption">从一份好奇开始</span></div>
+          <div class="cover-cta"><a href="read.html#preface" class="primary-link" id="start-reading">翻开这本书 <span aria-hidden="true">↗</span></a><span id="resume-caption">从一份好奇开始</span></div>
           <p class="cover-footnote">六篇 · 十八章 · 可以停下来想一想</p>
         </div>
         <figure class="cover-art"><img src="assets/doorway.webp" alt="一个拿着书的女孩，站在通向夏日天空的蓝色门前。" width="1024" height="1280" fetchpriority="high"><figcaption>AI 可以让你看得更远。<br>真正走向远方的人，仍然是你。</figcaption></figure>
       </div>
       <div class="journey-intro"><span>这本书的六段旅程</span><span>按顺序读，也可以从好奇的地方走进去。</span></div>
-      <nav class="journey" id="journey" aria-label="六篇阅读入口"></nav>
+      <nav class="journey" id="journey" aria-label="六篇阅读入口"><a href="read.html#ch01"><span class="part-no">01</span><strong>看见 AI</strong></a><a href="read.html#ch04"><span class="part-no">02</span><strong>打开机器盖</strong></a><a href="read.html#ch07"><span class="part-no">03</span><strong>学科的远方</strong></a><a href="read.html#ch10"><span class="part-no">04</span><strong>给思考留白</strong></a><a href="read.html#ch13"><span class="part-no">05</span><strong>握住方向盘</strong></a><a href="read.html#ch16"><span class="part-no">06</span><strong>未来的自己</strong></a></nav>
       <div class="cover-bottom"><p>给未来留一扇门，<br>给自己留一点慢慢思考的时间。</p><a href="book.md" download="门后的光_网站配套文稿.md">下载全书 Markdown <span aria-hidden="true">↓</span></a></div>
     </section>
     <div id="reader" class="reader-view" hidden>
@@ -42,9 +44,9 @@
       <aside class="page-margin" aria-label="本章小节"><span>这一章</span><nav id="section-nav"></nav></aside>
     </div>
   </main>
-  <div id="reading-progress" class="reading-progress" hidden><div class="progress-track" role="progressbar" aria-label="本章阅读进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="progress-fill"></div></div><div class="progress-meta"><span id="progress-title"></span><span id="progress-percent">0%</span><a id="progress-next" href="#ch01">下一章 →</a></div></div>
-  <dialog id="contents-dialog" class="contents-dialog"><div class="dialog-top"><div><span class="eyebrow">CONTENTS</span><h2>每一扇门后，<br>都有一个好问题。</h2></div><button class="close-dialog" data-close="contents-dialog" aria-label="关闭目录">×</button></div><div id="contents-list"></div><div class="dialog-bottom"><a href="book.md" download="门后的光_网站配套文稿.md">下载全书文稿 ↓</a><span>六篇十八章 · 阅读初稿</span></div></dialog>
-  <dialog id="settings-dialog" class="settings-dialog"><div class="dialog-top"><h2>读得舒服一点</h2><button class="close-dialog" data-close="settings-dialog" aria-label="关闭阅读设置">×</button></div><fieldset><legend>文字大小</legend><div class="setting-choices"><button data-font="small">适中</button><button data-font="normal" aria-pressed="true">舒展</button><button data-font="large">大字</button></div></fieldset><fieldset><legend>阅读底色</legend><div class="setting-choices"><button data-theme="paper" aria-pressed="true">纸白</button><button data-theme="night">夜读</button></div></fieldset><fieldset><legend>页面动效</legend><label class="check-row"><input id="motion-toggle" type="checkbox">减少动态，安静阅读</label></fieldset><label class="volume-label" for="volume">轻音乐音量 <span id="volume-value">25%</span></label><input type="range" id="volume" min="0" max="60" value="25"><p class="settings-hint">无歌词的轻柔旋律。由你开启，随时暂停。</p></dialog>
+  <div id="reading-progress" class="reading-progress" hidden><div class="progress-track" role="progressbar" aria-label="本章阅读进度" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><div id="progress-fill"></div></div><div class="progress-meta"><span id="progress-title"></span><span id="progress-percent" aria-label="已浏览比例，不代表理解程度">0%</span><a id="progress-next" href="#ch01">下一章 →</a></div></div>
+  <dialog id="contents-dialog" class="contents-dialog"><div class="dialog-top"><div><span class="eyebrow">CONTENTS</span><h2>每一扇门后，<br>都有一个好问题。</h2></div><button class="close-dialog" data-close="contents-dialog" aria-label="关闭目录">×</button></div><div id="contents-list"></div><div class="dialog-bottom"><a href="book.md" download="门后的光_网站配套文稿.md">下载全书文稿 ↓</a><span>六篇十八章 · 内容深化稿</span></div></dialog>
+  <dialog id="settings-dialog" class="settings-dialog"><div class="dialog-top"><h2>读得舒服一点</h2><button class="close-dialog" data-close="settings-dialog" aria-label="关闭阅读设置">×</button></div><fieldset><legend>文字大小</legend><div class="setting-choices"><button data-font="small">适中</button><button data-font="normal" aria-pressed="true">舒展</button><button data-font="large">大字</button></div></fieldset><fieldset><legend>阅读底色</legend><div class="setting-choices"><button data-theme="paper" aria-pressed="true">纸白</button><button data-theme="night">夜读</button></div></fieldset><fieldset><legend>页面动效</legend><label class="check-row"><input id="motion-toggle" type="checkbox">减少动态，安静阅读</label><p id="motion-system-note" class="settings-hint" hidden>已遵循设备的减少动态设置。</p></fieldset><label class="volume-label" for="volume">轻音乐音量 <span id="volume-value">25%</span></label><input type="range" id="volume" min="0" max="60" value="25"><button id="quiet-reading" class="quiet-reading">安静阅读 · 暂停音乐</button><p class="settings-hint">切到后台或打开外部资料时暂停，回来后由你决定是否继续。</p></dialog>
   <div id="notice" class="notice" role="status" aria-live="polite"></div>
-  <noscript><p class="noscript">阅读网页需要启用 JavaScript。你也可以直接<a href="book.md">下载完整文稿</a>。</p></noscript>
+  <div id="reading-fallback" class="reading-fallback"><p>你也可以打开<a href="read.html">完整静态阅读版</a>，或<a href="book.md">下载全书文稿</a>。静态版保留正文、图解与全部解释，无须脚本。</p></div>
 </body></html>

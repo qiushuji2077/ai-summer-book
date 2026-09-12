@@ -1,0 +1,11 @@
+const fs=require('node:fs');
+const path=require('node:path');
+const root=path.resolve(__dirname,'..');
+const engine=require(path.join(root,'dist/reader-engine.js'));
+const source=fs.readFileSync(path.join(root,'dist/book.md'),'utf8');
+const chapters=engine.parseBook(source);
+if(chapters.length!==19)throw Error('Expected preface and eighteen chapters');
+const esc=engine.esc;
+const html=`<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>门后的光 · 完整静态阅读版</title><meta name="description" content="序章与六篇十八章，包含全部图解、教学示例与来源，可离线阅读和打印。"><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="reading.css"></head><body><main class="static-reading"><a class="static-top" href="index.html">← 回到可交互阅读版</a><header><p class="eyebrow">内容深化稿 0.2 · 无须脚本</p><h1>门后的光</h1><p>写给你的 AI 之书。正文、示例与完整解释都在这里，可以慢慢读，也可以打印。</p></header><nav aria-label="全书目录"><ol class="static-contents">${chapters.map(c=>`<li><a href="#${c.id}">${esc(c.label)} · ${esc(c.title)}</a></li>`).join('')}</ol></nav>${chapters.map(c=>`<section class="chapter-static" id="${c.id}"><header><p class="chapter-kicker">${esc(c.label)}${c.part?' · '+engine.PARTS[c.part-1].title:''}</p><h1>${esc(c.title)}</h1><p>${esc(c.subtitle)}</p></header><article class="prose">${engine.renderChapter(c).replaceAll('<details class="reading-detail">','<details class="reading-detail" open>')}</article></section>`).join('')}</main></body></html>`;
+fs.writeFileSync(path.join(root,'dist/read.html'),html);
+console.log(`已生成 ${chapters.length} 章完整静态阅读与打印版。`);
