@@ -34,7 +34,7 @@
     if(id==='ch10'){hook('V10',['“原来，','“后来，','“现在，'].map(find).filter(i=>i>=0));moveToFirst('V10');}
     if(id==='ch11'){
       const v=blocks.find(b=>b.type==='visual'&&b.meta.id==='V11');
-      if(v){const start=find('**第一点提示：**'),end=find('第三步给出了');if(start>=0&&end>start){v.items=blocks.slice(start,end+1);for(let i=start;i<=end;i++)blocks[i].consumed=true;}}
+      if(v){const start=find('**第一点提示：**'),end=blocks.indexOf(v)-1;if(start>=0&&end>start&&blocks.slice(start,end+1).every(b=>b.type==='p')){v.items=blocks.slice(start,end+1);for(let i=start;i<=end;i++)blocks[i].consumed=true;}}
     }
     if(id==='ch14'){hook('V14',[find('原来的材料是：'),find('准备交给工具的版本')].filter(i=>i>=0));moveToFirst('V14');}
     if(id==='ch18'){hook('V18',['“现在，我最想','“我准备先去','“我希望 AI','“有一件事，','“过一段时间，'].map(find).filter(i=>i>=0));moveToFirst('V18');}

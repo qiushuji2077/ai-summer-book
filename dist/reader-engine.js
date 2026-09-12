@@ -1,10 +1,10 @@
 'use strict';
 (function (root, factory) {
-  const engine = factory(typeof module !== 'undefined' ? require('./reading-modules.js') : root.BookModules);
+  const engine = factory(typeof module !== 'undefined' ? require('./reading-modules.js') : root.BookModules, typeof module !== 'undefined' ? require('./animated-lessons.js') : root.BookAnimations);
   if (typeof module !== 'undefined') module.exports = engine;
   else root.BookEngine = engine;
-})(typeof window !== 'undefined' ? window : {}, function (modules) {
-  const VERSION = '0.2';
+})(typeof window !== 'undefined' ? window : {}, function (modules, animations) {
+  const VERSION = '0.3';
   const PARTS = [
     {title:'看见 AI',subtitle:'它已经走到了哪里',question:'聊天框外，还有什么？'},
     {title:'打开机器盖',subtitle:'看懂新一代 AI',question:'它到底怎样工作？'},
@@ -76,7 +76,7 @@
     const api={esc,inline,render,blocks,chapterId};
     return blocks.map(b=>{
       if(b.consumed)return '';
-      if(b.type==='visual'){const fallback=()=>(b.items||[]).map(x=>render(x.text||'')).join('');try{return enhance&&modules?.visual?modules.visual(b.meta.id,api,b)||fallback():fallback();}catch{return fallback();}}
+      if(b.type==='visual'){const fallback=()=>(b.items||[]).map(x=>render(x.text||'')).join('');try{return enhance?(animations?.render(b.meta.id)||modules?.visual?.(b.meta.id,api,b)||fallback()):fallback();}catch{return fallback();}}
       if(b.type==='heading'){if(b.level===1)return '';if(b.level===2){state.heading++;return `<h2 id="${chapterId}--section-${state.heading}">${inline(b.text)}</h2>`;}return `<h3>${inline(b.text)}</h3>`;}
       if(b.type==='p')return `<p>${inline(b.text)}</p>`;
       if(b.type==='quote')return `<blockquote><p>${inline(b.text)}</p></blockquote>`;

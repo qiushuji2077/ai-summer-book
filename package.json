@@ -1,12 +1,12 @@
 {
   "name": "ai-summer-book",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "private": true,
   "description": "门后的光：静态数字书",
   "scripts": {
     "dev": "node scripts/preview.cjs",
     "build": "python scripts/sync-content.py",
-    "test": "node tests/content.cjs"
+    "test": "node tests/content.cjs && node tests/animation-lifecycle.cjs"
   },
   "engines": {"node": ">=18"}
 }

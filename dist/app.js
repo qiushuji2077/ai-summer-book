@@ -19,9 +19,10 @@
   function notify(msg){$('#notice').textContent=msg;$('#notice').classList.add('visible');clearTimeout(noticeTimer);noticeTimer=setTimeout(()=>$('#notice').classList.remove('visible'),3200);}
   function applySettings(){
     document.body.dataset.font=preferences.font;document.body.dataset.theme=preferences.theme;document.body.dataset.motion=(preferences.motion||systemMotion.matches)?'reduced':'full';document.documentElement.style.scrollBehavior=(preferences.motion||systemMotion.matches)?'auto':'';
-    $$('[data-font]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.font===preferences.font)));
-    $$('[data-theme]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.theme===preferences.theme)));
+    $$('button[data-font]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.font===preferences.font)));
+    $$('button[data-theme]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.theme===preferences.theme)));
     $('#motion-toggle').checked=!!preferences.motion||systemMotion.matches;$('#motion-toggle').disabled=systemMotion.matches;$('#motion-system-note').hidden=!systemMotion.matches;$('#volume').value=preferences.volume;$('#volume-value').textContent=preferences.volume+'%';
+    window.BookAnimations?.settingsChanged();
   }
   systemMotion.addEventListener('change',applySettings);
   applySettings();
@@ -30,18 +31,20 @@
   const setSoundUI=playing=>{$('#sound-toggle').setAttribute('aria-pressed',String(playing));$('.sound-label').textContent=playing?'轻音乐 · 开':'轻音乐 · 关';$('#sound-toggle').setAttribute('aria-label',playing?'暂停轻音乐':'开启轻音乐');};
   $('#sound-toggle').addEventListener('click',async()=>{
     wantedMusic=!wantedMusic;
-    if(wantedMusic){try{await sound.play();if(wantedMusic){setSoundUI(true);notify('窗边 · 轻音乐已开启');}else sound.pause();}catch{wantedMusic=false;setSoundUI(false);notify('音乐未能播放，阅读可以继续。');}}
+    if(wantedMusic){window.BookAnimations?.pauseAll('轻音乐已开启，图解停在这里。');try{await sound.play();if(wantedMusic){setSoundUI(true);notify('窗边 · 轻音乐已开启');}else sound.pause();}catch{wantedMusic=false;setSoundUI(false);notify('音乐未能播放，阅读可以继续。');}}
     else{sound.pause();setSoundUI(false);}
   });
   sound.addEventListener('error',()=>{if(wantedMusic){wantedMusic=false;setSoundUI(false);notify('音乐未能播放，阅读可以继续。');}});
   const quiet=()=>{wantedMusic=false;sound.pause();setSoundUI(false);};
-  $('#quiet-reading').addEventListener('click',quiet);
+  const quietAll=()=>{quiet();window.BookAnimations?.pauseAll('已经暂停，可以安静地读一会儿。');};
+  $('#quiet-reading').addEventListener('click',quietAll);
+  document.addEventListener('book:narration-start',quiet);
   document.addEventListener('visibilitychange',()=>{if(document.hidden)quiet();});
   $('#volume').addEventListener('input',e=>{preferences.volume=Number(e.target.value);sound.volume=preferences.volume/100;$('#volume-value').textContent=preferences.volume+'%';persist();});
-  $$('[data-font]').forEach(b=>b.addEventListener('click',()=>{preferences.font=b.dataset.font;applySettings();persist();updateProgress();}));
-  $$('[data-theme]').forEach(b=>b.addEventListener('click',()=>{preferences.theme=b.dataset.theme;applySettings();persist();}));
+  $$('button[data-font]').forEach(b=>b.addEventListener('click',()=>{preferences.font=b.dataset.font;applySettings();persist();updateProgress();}));
+  $$('button[data-theme]').forEach(b=>b.addEventListener('click',()=>{preferences.theme=b.dataset.theme;applySettings();persist();}));
   $('#motion-toggle').addEventListener('change',e=>{preferences.motion=e.target.checked;applySettings();persist();});
-  const openDialog=id=>{const d=document.getElementById(id);if(d&&!d.open)d.showModal();};
+  const openDialog=id=>{const d=document.getElementById(id);if(d&&!d.open){window.BookAnimations?.pauseAll();d.showModal();}};
   $('#contents-toggle').addEventListener('click',()=>openDialog('contents-dialog'));
   $('#settings-toggle').addEventListener('click',()=>openDialog('settings-dialog'));
   $$('[data-close]').forEach(b=>b.addEventListener('click',()=>document.getElementById(b.dataset.close).close()));
@@ -60,6 +63,7 @@
     if(raw==='main'){document.getElementById('main').focus();return;}
     const id=raw.split('--')[0];
     if(current && current.id!==id && !scrollLocked){preferences.last={id:current.id,scroll:scrollY};persist();}
+    if(current?.id!==id)window.BookAnimations?.dispose();
     if(id==='cover'){
       current=null;delete document.body.dataset.chapter;$('#cover').hidden=false;$('#reader').hidden=true;$('#reading-progress').hidden=true;document.title='门后的光 · 写给你的 AI 之书';buildContents();window.scrollTo({top:0,behavior:'instant'});return;
     }
@@ -72,6 +76,7 @@
     $('#chapter-heading').innerHTML=`<div class="chapter-kicker">${ch.label}${p?' · '+p.title:''}</div><h1 tabindex="-1">${esc(ch.title)}</h1><p class="subtitle">${esc(ch.subtitle)}</p><div class="chapter-meta"><span>约 ${ch.minutes} 分钟 · 仅作参考</span><span>${ch.part?'全书 '+ch.id.slice(2)+' / 18':'写给你'}</span><button class="plain-button mobile-settings" style="display:none" data-open-settings>字号与底色</button></div>`;
     $('#chapter-body').innerHTML=renderChapter(ch);
     window.BookModules.mount($('#chapter-body'));
+    window.BookAnimations?.mount($('#chapter-body'));
     document.body.classList.add('reader-enhanced');
     const part=ch.part||1;
     $('#rail-content').innerHTML=`<div class="rail-part"><span class="part-no">${String(part).padStart(2,'0')}</span><h2>${PARTS[part-1].title}</h2><p>${PARTS[part-1].question}</p></div><nav class="rail-chapters">${(ch.part===0?[ch,...chapters.filter(c=>c.part===1)]:chapters.filter(c=>c.part===ch.part)).map(c=>`<a href="#${c.id}" ${c.id===ch.id?'aria-current="page"':''}><span>${c.id==='preface'?'序':c.id.slice(2)}</span>${esc(c.title)}</a>`).join('')}</nav><button class="rail-all" data-open-contents>展开全书目录</button>`;
@@ -103,13 +108,14 @@
     if(e.target.closest('[data-open-contents]'))openDialog('contents-dialog');
     if(e.target.closest('[data-open-settings]'))openDialog('settings-dialog');
     window.BookModules.handle(e,$('#chapter-body'));
-    if(e.target.closest('a[target="_blank"]'))quiet();
-    if(e.target.closest('[data-pause-reading]')){quiet();if(current){preferences.last={id:current.id,scroll:scrollY};persist();}location.hash='cover';}
+    window.BookAnimations?.handle(e,$('#chapter-body'));
+    if(e.target.closest('a[target="_blank"]'))quietAll();
+    if(e.target.closest('[data-pause-reading]')){quietAll();if(current){preferences.last={id:current.id,scroll:scrollY};persist();}location.hash='cover';}
 
   });
   window.addEventListener('hashchange',renderRoute);window.addEventListener('scroll',updateProgress,{passive:true});window.addEventListener('resize',updateProgress,{passive:true});
   window.addEventListener('pagehide',()=>{if(current){preferences.last={id:current.id,scroll:scrollY};persist();}sound.pause();wantedMusic=false;setSoundUI(false);});
-  function init(source){chapters=parseBook(source);if(chapters.length!==19)throw new Error('章节未完整载入');buildContents();renderRoute();$('#reading-fallback').hidden=true;if(updatedContent)notify('正文已更新为 0.2，保留上次章节，从章首继续读。');}
+  function init(source){chapters=parseBook(source);if(chapters.length!==19)throw new Error('章节未完整载入');buildContents();renderRoute();$('#reading-fallback').hidden=true;if(updatedContent)notify(`正文已更新为 ${VERSION}，保留上次章节，从章首继续读。`);}
   try{init(window.BOOK_SOURCE||'');}catch(err){$('#cover .cover-intro').textContent='正文暂时未能载入。你仍可以下载完整文稿阅读。';$('#reading-fallback').hidden=false;console.error(err);}
   // Bundled text and enhanced content always come from the same build.
   const openBeforePrint=[];
